@@ -62,7 +62,6 @@ const getStudentsCount = async (filters) => {
   return parseInt(result.rows[0].count, 10);
 };
 
-
 const createStudent = async (data) => {
   const { student_id, name, student_class, vaccinated, vaccine_name, vaccination_date } = data;
 
@@ -83,7 +82,6 @@ const updateStudent = async (id, data) => {
   );
   return result.rows[0];
 };
-
 
 const findVaccinationByStudentIdAndVaccine = async (student_id, vaccine_name) => {
   const result = await pool.query(

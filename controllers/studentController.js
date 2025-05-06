@@ -2,16 +2,10 @@ const StudentModel = require('../models/studentModel');
 
 const getAllStudents = async (req, res) => {
   try {
-    const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 20;
-
-    // Get filtered and paginated students
     const students = await StudentModel.getAllStudents(req.query);
 
-    // Get total count for pagination metadata
     const total = await StudentModel.getStudentsCount(req.query);
 
-    // 3. Return structured response
     res.json({
       data: students,
       page: parseInt(req.query.page, 10) || 1,
