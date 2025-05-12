@@ -6,13 +6,12 @@ ADMIN_PASS = process.env.ADMIN_PASS;
 const login = (req, res) => {
   const { username, password } = req.body;
 
-  // hard-coded check
   if (username === ADMIN_USER && password === ADMIN_PASS) {
     // On success
-    return res.json({ message: 'Login successful' });
+    return res.json({"success": true, "user": username, message: 'Login successful'});
   }
   // On failure
-  res.status(401).json({ message: 'Invalid credentials' });
+  res.status(401).json({"success": false, message: 'Invalid credentials' });
 };
 
 module.exports = { login };
