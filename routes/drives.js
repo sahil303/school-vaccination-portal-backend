@@ -7,5 +7,6 @@ router.get('/', driveController.getAllDrives);
 router.post('/', driveController.createDrive);
 router.put('/:id', driveController.updateDrive);
 router.delete('/:id', driveController.deleteDrive);
+router.get('/current', driveController.currentDrive);
 
 module.exports = router;

@@ -7,10 +7,45 @@ const isLessThan15Days = (date) => {
   return (d - now) / (1000 * 60 * 60 * 24) < 15;
 };
 
+const isCurrentDrive = (dateString) => {
+    const inputDate = new Date(dateString);
+    const today = new Date();
+
+    // Set hours, minutes, seconds, and milliseconds to 0 for accurate comparison
+    inputDate.setHours(0, 0, 0, 0);
+    today.setHours(0, 0, 0, 0);
+
+    return inputDate.getTime() === today.getTime();
+}
+
 const getAllDrives = async (req, res) => {
   try {
     const drives = await DriveModel.getAllDrives();
     res.json(drives);
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Server error');
+  }
+};
+
+const currentDrive = async (req, res) => {
+  try {
+    const drives = await DriveModel.getAllDrives();
+    
+    if(drives.length > 0)
+    {
+      const drive = drives.find(d => isCurrentDrive(d.drive_date));
+
+      if(!drive)
+      {
+          res.json( {message : "No drive scheduled for today"});
+      }
+      else{
+        res.json({data : drive});
+      }
+    }
+
+    res.status(400).json({message : "No Drive Availabe"});
   } catch (err) {
     console.error(err);
     res.status(500).send('Server error');
@@ -46,6 +81,10 @@ const updateDrive = async (req, res) => {
       return res.status(400).json({ message: 'Cannot update past drives.' });
     }
 
+    if (isLessThan15Days(drive_date)) {
+      return res.status(400).json({ message: 'Drive must be scheduled at least 15 days in advance.' });
+    }
+
     const updated = await DriveModel.updateDrive(req.params.id, req.body);
     res.json(updated);
   } catch (err) {
@@ -78,6 +117,7 @@ const deleteDrive = async (req, res) => {
 
 module.exports = {
   getAllDrives,
+  currentDrive,
   createDrive,
   updateDrive,
   deleteDrive

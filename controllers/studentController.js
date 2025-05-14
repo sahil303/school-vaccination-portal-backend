@@ -7,7 +7,7 @@ const getAllStudents = async (req, res) => {
     const total = await StudentModel.getStudentsCount(req.query);
 
     res.json({
-      data: students,
+      students: students,
       page: parseInt(req.query.page, 10) || 1,
       limit: parseInt(req.query.limit, 10) || 20,
       total
@@ -18,6 +18,23 @@ const getAllStudents = async (req, res) => {
     res.status(500).send('Server error');
   }
 };
+
+const getStudentbyId = async (req, res) =>{
+  try {
+    const existingStudent = await StudentModel.findStudentById(req.params.student_id);
+    if (!existingStudent) {
+      return res.status(400).json({ message: 'Student with this ID does not exists.' });
+    }
+
+    res.json({
+      data : existingStudent
+    });
+    
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Server error');
+  }
+}
 
 const validateVaccinationData = ({ vaccinated, vaccine_name, vaccination_date }) => {
 
@@ -37,15 +54,11 @@ const createStudent = async (req, res) => {
       return res.status(400).json({ message: 'Student with this ID already exists.' });
     }
 
-    if (req.body.vaccinated === true) {
-      const existing = await StudentModel.findVaccinationByStudentIdAndVaccine(req.body.student_id, req.body.vaccine_name);
-      if (existing.length > 0) {
-        return res.status(400).json({ message: 'This student already has this vaccine recorded.' });
-      }
+    if (req.body) {
+      req.body.vaccinated = false;
+      req.body.vaccine_name = null;
+      req.body.vaccination_date = null;
     }
-
-    // Validate vaccination logic
-    validateVaccinationData(req.body);
 
     const student = await StudentModel.createStudent(req.body);
     res.status(201).json(student);
@@ -61,6 +74,22 @@ const createStudent = async (req, res) => {
 };
 
 const updateStudent = async (req, res) => {
+  try {
+
+    const existingStudent = await StudentModel.findStudentById(req.body.student_id);
+    if (!existingStudent) {
+      return res.status(400).json({ message: 'Student with this ID does not exists.' });
+    }
+
+    const updated = await StudentModel.updateStudent(req.params.student_id, req.body);
+    res.json(updated);
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Server error');
+  }
+};
+
+const markStudentVaccinated = async (req, res) => {
   try {
 
     const existingStudent = await StudentModel.findStudentById(req.body.student_id);
@@ -92,13 +121,13 @@ const updateStudent = async (req, res) => {
 
 const deleteStudent = async (req, res) => {
   try {
-
-    const existingStudent = await StudentModel.findStudentById(req.body.student_id);
+    console.log(req.params.student_id);
+    const existingStudent = await StudentModel.findStudentById(req.params.student_id);
     if (!existingStudent) {
       return res.status(400).json({ message: 'Student with this ID does not exists.' });
     }
 
-    await StudentModel.deleteStudent(req.params.id);
+    await StudentModel.deleteStudent(req.params.student_id);
     res.json({ message: 'Student deleted' });
   } catch (err) {
     console.error(err);
@@ -108,7 +137,9 @@ const deleteStudent = async (req, res) => {
 
 module.exports = {
   getAllStudents,
+  getStudentbyId,
   createStudent,
   updateStudent,
+  markStudentVaccinated,
   deleteStudent,
 };
