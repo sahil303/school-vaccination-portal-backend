@@ -1,6 +1,6 @@
 const DriveModel = require('../models/driveModel');
 
-const isDateInPast = (date) => new Date(date) <= new Date();
+const isDateInPast = (date) => new Date(date) < new Date();
 const isLessThan15Days = (date) => {
   const now = new Date();
   const d = new Date(date);
@@ -38,14 +38,15 @@ const currentDrive = async (req, res) => {
 
       if(!drive)
       {
-          res.json( {message : "No drive scheduled for today"});
+          return res.json( {message : "No drive scheduled for today"});
       }
       else{
-        res.json({data : drive});
+        return res.json({data : drive});
       }
     }
-
-    res.status(400).json({message : "No Drive Availabe"});
+    else{
+          res.status(400).json({message : "No Drive Availabe"});
+    }
   } catch (err) {
     console.error(err);
     res.status(500).send('Server error');
@@ -67,6 +68,18 @@ const createDrive = async (req, res) => {
 
     const drive = await DriveModel.createDrive(req.body);
     res.status(201).json(drive);
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Server error');
+  }
+};
+
+const updateAvailableDoses = async (req, res) => {
+  try {
+    const { drive_date } = req.body;
+
+    const updated = await DriveModel.updateDrive(req.params.id, req.body);
+    res.json(updated);
   } catch (err) {
     console.error(err);
     res.status(500).send('Server error');
@@ -118,6 +131,7 @@ const deleteDrive = async (req, res) => {
 module.exports = {
   getAllDrives,
   currentDrive,
+  updateAvailableDoses,
   createDrive,
   updateDrive,
   deleteDrive

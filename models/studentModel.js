@@ -1,65 +1,19 @@
 const pool = require('../db');
 
-const getAllStudents = async (filters) => {
-  const { name, student_class, vaccinated, page = 1, limit = 20 } = filters;
+const getAllStudents = async () => {
   let query = 'SELECT * FROM students';
-  const conditions = [];
-  const values = [];
 
-  // filtering data
-  if (name) {
-    values.push(`%${name}%`);
-    conditions.push(`name ILIKE $${values.length}`);
-  }
-  if (student_class) {
-    values.push(`%${student_class}%`);
-    conditions.push(`student_class ILIKE $${values.length}`);
-  }
-  if (vaccinated !== undefined) {
-    values.push(vaccinated === 'true');
-    conditions.push(`vaccinated = $${values.length}`);
-  }
+  query += ' ORDER BY student_id';
 
-  if (conditions.length) {
-    query += ' WHERE ' + conditions.join(' AND ');
-  }
-
-  query += ' ORDER BY id';
-
-  // Pagination: OFFSET and LIMIT
-  const offset = (parseInt(page) - 1) * parseInt(limit);
-  values.push(limit);
-  values.push(offset);
-  query += ` LIMIT $${values.length - 1} OFFSET $${values.length}`;
-
-  const result = await pool.query(query, values);
+  const result = await pool.query(query);
   return result.rows;
 };
 
-const getStudentsCount = async (filters) => {
+const getStudentsCount = async () => {
   let countQuery = 'SELECT COUNT(*) FROM students';
-  const conditions = [];
-  const values = [];
 
-  if (filters.name) {
-    values.push(`%${filters.name}%`);
-    conditions.push(`name ILIKE $${values.length}`);
-  }
-  if (filters.student_class) {
-    values.push(`%${filters.student_class}%`);
-    conditions.push(`student_class ILIKE $${values.length}`);
-  }
-  if (filters.vaccinated !== undefined) {
-    values.push(filters.vaccinated === 'true');
-    conditions.push(`vaccinated = $${values.length}`);
-  }
-
-  if (conditions.length) {
-    countQuery += ' WHERE ' + conditions.join(' AND ');
-  }
-
-  const result = await pool.query(countQuery, values);
-  return parseInt(result.rows[0].count, 10);
+  const result = await pool.query(countQuery);
+  return parseInt(result.rows[0].count);
 };
 
 const createStudent = async (data) => {

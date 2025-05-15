@@ -2,15 +2,13 @@ const StudentModel = require('../models/studentModel');
 
 const getAllStudents = async (req, res) => {
   try {
-    const students = await StudentModel.getAllStudents(req.query);
+    const students = await StudentModel.getAllStudents();
 
-    const total = await StudentModel.getStudentsCount(req.query);
+    const total = await StudentModel.getStudentsCount();
 
     res.json({
       students: students,
-      page: parseInt(req.query.page, 10) || 1,
-      limit: parseInt(req.query.limit, 10) || 20,
-      total
+      total : total
     });
     
   } catch (err) {
